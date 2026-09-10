@@ -1,0 +1,24 @@
+/**
+ * Overrides Infima's default palette with a color scheme closer to the
+ * rest of Canopychain's brand — everything else is left at the theme's
+ * sensible defaults.
+ */
+:root {
+  --ifm-color-primary: #16a34a;
+  --ifm-color-primary-dark: #14933f;
+  --ifm-color-primary-darker: #12873b;
+  --ifm-color-primary-darkest: #0f6f31;
+  --ifm-color-primary-light: #1eb355;
+  --ifm-color-primary-lighter: #2cb960;
+  --ifm-color-primary-lightest: #52c67e;
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #4ade80;
+  --ifm-color-primary-dark: #2fd968;
+  --ifm-color-primary-darker: #20d15d;
+  --ifm-color-primary-darkest: #1aac4c;
+  --ifm-color-primary-light: #69e195;
+  --ifm-color-primary-lighter: #78e4a1;
+  --ifm-color-primary-lightest: #a1edc0;
+}
