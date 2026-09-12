@@ -6,7 +6,9 @@ sidebar_position: 8
 
 Each repo documents its own setup in its own README; this page is the
 order to actually run them in, end to end, with one instance of everything
-talking to the others correctly.
+talking to the others correctly. For running a real deployment rather than
+a laptop against testnet, see the [Full-stack deployment guide](./full-stack-deployment.md)
+instead.
 
 Clone all four repos as siblings — the paths below assume that layout:
 
