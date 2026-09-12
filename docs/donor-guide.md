@@ -48,8 +48,11 @@ Refunds are proportional — you get back your share of whatever hasn't
 been released yet (`your donation / total deposited` of the remainder),
 not necessarily your full original amount, since some tranches may have
 already paid out before the project was cancelled. See
-[The Milestone Attestation Model](./attestation-model.md#what-limits-the-blast-radius)
-for why cancellation exists and what triggers it.
+[What happens to a stalled project](./stalled-projects.md) for the full
+picture — why a project ends up here, who decides to cancel it, and a gap
+worth knowing about in how quickly this dashboard reflects that decision —
+and [The Milestone Attestation Model](./attestation-model.md#what-limits-the-blast-radius)
+for why cancellation exists as a mechanism at all.
 
 Both funding and refunding confirm on-chain right away, but the numbers
 on `/dashboard` and a project's own page come from an indexer that polls

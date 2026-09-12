@@ -204,7 +204,9 @@ stall or fail to progress, not something a single donor can trigger
 unilaterally against a pool other donors also contributed to. Blocks
 further deposits and attestations; whatever hasn't been released becomes
 claimable via `refund`. Emits a `cancelled` event — topics
-`(Symbol("cancelled"), project_id)`, no data.
+`(Symbol("cancelled"), project_id)`, no data. See
+[What happens to a stalled project](./stalled-projects.md) for when and how
+this actually gets called.
 
 ```rust
 fn refund(env: Env, project_id: u64, donor: Address) -> Result<i128, Error>
