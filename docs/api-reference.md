@@ -56,7 +56,9 @@ or an operator address. `404` if it doesn't exist.
 (`POST /projects/register`) attaches them — the on-chain `register` event
 alone only carries the operator address and name. See
 [Architecture](./architecture.md) for why the indexer and the intake
-endpoint can each independently create this row.
+endpoint can each independently create this row, and
+[The backend's data model](./data-model.md) for every field's exact
+provenance.
 
 ### `GET /donations?donor=`
 
