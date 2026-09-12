@@ -28,7 +28,8 @@ Owns one fact per project: whether it's approved to receive funding.
 `polygon_hash` commits on-chain to the GPS-bounded plot boundary — the
 actual GeoJSON polygon lives off-chain in the backend, keyed by this hash,
 so the plot a project is scored against can't be silently swapped after
-donors have funded it.
+donors have funded it. See [Verifying a project's polygon yourself](./verifying-polygons.md)
+for how to check the backend's copy against this value independently.
 
 ### Errors
 

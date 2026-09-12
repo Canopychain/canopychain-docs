@@ -77,3 +77,9 @@ project's attestor key. That's a meaningfully different trust model from
 "the blockchain guarantees this," and this doc exists so nobody has to
 take that on faith or discover it by reading the contract source
 themselves.
+
+One piece of this you don't have to take on faith at all: which plot a
+project is actually being scored against. That's committed on-chain as a
+hash specifically so it can't be silently swapped after you've funded a
+project — see [Verifying a project's polygon yourself](./verifying-polygons.md)
+for how to check it against the backend's copy independently.
