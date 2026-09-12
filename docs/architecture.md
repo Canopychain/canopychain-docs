@@ -80,7 +80,9 @@ into a write against a normal relational schema: `projects`, `donors`,
 `project_donations`, `milestones`. This exists purely so the frontend can
 ask questions like "list approved projects" or "show this project's
 milestone timeline" without scanning on-chain event history on every page
-load.
+load. See [The backend's data model](./data-model.md) for the actual tables
+and, column by column, which are indexer-written and which come from the
+off-chain registration intake instead.
 
 Two pieces here have no equivalent in a purely read-mirroring backend:
 
