@@ -88,8 +88,9 @@ matter to one of four audiences. Pick the one that's you:
   [What happens to a stalled project](./stalled-projects.md) for what
   happens if your project doesn't cross a milestone in time.
 - **Admin** — running an instance: approving registrations, configuring
-  milestone schedules, and cancelling stalled projects. Start with
-  [Architecture](./architecture.md) for the `/admin` oversight view, then
+  milestone schedules, and cancelling stalled projects. Start with the
+  [Admin runbook](./admin-runbook.md), which walks through those in the
+  order that avoids leaving a project depositable with no schedule, then
   [What happens to a stalled project](./stalled-projects.md) and
   [The Milestone Attestation Model](./attestation-model.md#what-limits-the-blast-radius)
   for what cancellation and attestor rotation actually do.
