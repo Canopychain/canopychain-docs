@@ -76,10 +76,31 @@ backend indexer that polls the chain on an interval (a few seconds by
 default), not from the chain directly. Give it a moment before assuming
 something's wrong.
 
+### Does it cost anything to use Canopychain?
+
+Not a platform fee, but yes — every on-chain action is a Stellar
+transaction, and Stellar's network fee (typically a fraction of a cent,
+paid in XLM) is charged to whoever signs it, not to Canopychain:
+
+- A **donor** pays it when depositing into a project, and again if they
+  later claim a refund.
+- An **operator** pays it when registering a project.
+- An **admin** pays it when approving a registration, configuring a
+  milestone schedule, or cancelling a project.
+- The **backend's attestor** pays it when submitting `attest_milestone` —
+  see [The Milestone Attestation Model](./attestation-model.md). Neither
+  the donor whose funds are released nor the operator who receives them
+  pays for that transaction.
+
+That's separate from the fee question below, which is about a
+Canopychain-specific cut of funds — there isn't one.
+
 ### What fees does Canopychain take?
 
 None — `milestone-vault` has no protocol-fee mechanism at all in this
 MVP. Every attested tranche pays out in full to the project's recipient.
+This is about Canopychain's own cut of funds; see the question above for
+the Stellar network fees every on-chain action still costs.
 
 ### Can I run my own instance of Canopychain?
 
