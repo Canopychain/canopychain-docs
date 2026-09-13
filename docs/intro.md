@@ -70,6 +70,38 @@ Everything — the registry, every deposit, every attestation — lives
 on-chain and is independently verifiable; the backend indexer and
 frontend are just a convenient way to read and interact with it.
 
+## Where to start
+
+The sidebar lists every page in one flat order, but most of them only
+matter to one of four audiences. Pick the one that's you:
+
+- **Donor** — funding a project and tracking what you've given. Start
+  with the [Donor guide](./donor-guide.md), then
+  [What happens to a stalled project](./stalled-projects.md) to
+  understand what a refund actually depends on, and
+  [Verifying a project's polygon yourself](./verifying-polygons.md) if
+  you want to check a project's claims independently rather than take
+  them on trust.
+- **Operator** — registering a project to receive milestone-verified
+  funding. Start with the
+  [Operator guide](./operator-guide.md), then
+  [What happens to a stalled project](./stalled-projects.md) for what
+  happens if your project doesn't cross a milestone in time.
+- **Admin** — running an instance: approving registrations, configuring
+  milestone schedules, and cancelling stalled projects. Start with
+  [Architecture](./architecture.md) for the `/admin` oversight view, then
+  [What happens to a stalled project](./stalled-projects.md) and
+  [The Milestone Attestation Model](./attestation-model.md#what-limits-the-blast-radius)
+  for what cancellation and attestor rotation actually do.
+- **Contributor / developer** — building, deploying, or extending
+  Canopychain itself. Start with [Architecture](./architecture.md), then
+  the [Contracts reference](./contracts.md),
+  [Deploying the contracts](./deploying-contracts.md), and
+  [Contributing](./contributing.md).
+
+Whichever you are, the [FAQ](./faq.md) and [Glossary](./glossary.md) are
+useful references throughout, not just for one audience.
+
 ## Repositories
 
 Canopychain is split across four repos:
@@ -78,8 +110,3 @@ Canopychain is split across four repos:
 - **[canopychain-backend](https://github.com/canopychain/canopychain-backend)** — the Global Forest Watch polling worker and attestation submitter, an indexer that watches the contracts for events, and the API that serves that data.
 - **[canopychain-frontend](https://github.com/canopychain/canopychain-frontend)** — the donor and operator web app.
 - **canopychain-docs** — this site.
-
-See [Architecture](./architecture.md) for how these fit together,
-[Deploying the contracts](./deploying-contracts.md) to run your own
-instance, or [Contributing](./contributing.md) to work on Canopychain
-itself.
