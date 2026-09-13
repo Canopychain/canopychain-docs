@@ -96,4 +96,6 @@ The app is now at `http://localhost:3001` (3000 is taken by the backend).
 
 If something doesn't show up at all rather than just lagging, check the
 backend's own terminal output first — indexer and GFW-poll errors log
-there, not to the frontend.
+there, not to the frontend. See
+[Troubleshooting local development](./local-development-troubleshooting.md)
+for the specific failure modes this setup tends to hit.
