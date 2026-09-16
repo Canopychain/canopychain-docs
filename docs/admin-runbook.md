@@ -55,7 +55,7 @@ do them in this order:
 3. Call `approve_project` only once the schedule is in place.
 
 This is the reverse of the order the
-[operator guide](./operator-guide.md#4-youre-listed---set-a-milestone-schedule)
+[operator guide](./operator-guide.md#4-youre-listed--set-a-milestone-schedule)
 describes from the operator's side — that page shows approval and
 scheduling as two separate steps an operator waits through, without
 telling you which order minimizes risk. From the admin side, doing the

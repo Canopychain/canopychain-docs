@@ -165,7 +165,7 @@ a separate host directly.
   configured `ADMIN_ADDRESS`).
 - At least one project has been approved (`approve_project` on-chain) and
   given a milestone schedule (`configure_milestones` — see the
-  [operator guide](./operator-guide.md#4-youre-listed---set-a-milestone-schedule)),
+  [operator guide](./operator-guide.md#4-youre-listed--set-a-milestone-schedule)),
   since an approved project with no schedule can accept deposits but can
   never attest.
 - A test deposit against that project, from the deployed frontend, shows up
