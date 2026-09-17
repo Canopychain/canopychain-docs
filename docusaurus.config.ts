@@ -63,6 +63,13 @@ const config: Config = {
   themeConfig: {
     navbar: {
       title: 'Canopychain',
+      logo: {
+        alt: 'Canopychain',
+        src: 'img/logo.svg',
+        srcDark: 'img/logo-dark.svg',
+        width: 26,
+        height: 26,
+      },
       items: [
         { type: 'docSidebar', sidebarId: 'docsSidebar', position: 'left', label: 'Docs' },
         {
