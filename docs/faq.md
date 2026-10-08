@@ -11,11 +11,14 @@ protections do and don't exist.
 
 ### Does a milestone attestation mean the forest actually grew?
 
-Not exactly — it means the backend's satellite check found no *further
-loss* against the year-2000 baseline within the plot, which is the
-closest honest signal available from free, near-real-time data. It's not
-a certified confirmation of new growth. See
-[Forest-Cover Metric & Limitations](./forest-cover-metric.md) for the
+No, and the platform doesn't claim it. It means the plot kept a given
+share of its year-2000 baseline forest standing, continuously, for the
+milestone's full sustain period — stewardship against clearing, proven
+over months. Free, near-real-time satellite data records forest *loss*,
+not new growth, so retention is the strongest honest claim available
+from it; a milestone paid for confirmed regrowth would need a dataset
+this project doesn't integrate. See
+[Forest Retention Metric & Limitations](./forest-cover-metric.md) for the
 full explanation.
 
 ### Who verifies the attestor is telling the truth?

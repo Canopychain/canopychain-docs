@@ -70,7 +70,7 @@ report a problem.
   apps, not the chain. See [Deploying the contracts](./deploying-contracts.md#operational-note-the-registry-and-the-vault-dont-check-each-other)
   for the reasoning.
 - **The forest-cover metric itself is a disclosed, bounded proxy, not a
-  certified measurement.** See [Forest-Cover Metric & Limitations](./forest-cover-metric.md) —
+  certified measurement.** See [Forest Retention Metric & Limitations](./forest-cover-metric.md) —
   this isn't a bug to fix, it's a scope boundary to know about before
   trusting what a milestone actually confirms.
 - **No rate limiting protects any endpoint** — public reads

@@ -91,15 +91,30 @@ frontend's rendering of it.
 
 `configure_milestones(project_id, milestones)` on `milestone-vault` — see
 the [contracts reference](./contracts.md#milestone-vault) for the exact
-shape of a `Milestone` and its validation rules
-(`threshold_bps` strictly increasing, `payout_bps` summing to at most
-10,000).
+shape of a `Milestone` and its validation rules. Each tranche carries a
+retention floor, the period it must hold for, and its payout share; the
+contract rejects a floor of 0 or above 100%, a sustain period of 0,
+sustain periods that don't strictly increase, and payouts summing over
+10,000.
 
-This can only be called **once** per project — there's no "update
-schedule" function, deliberately, so a schedule donors already funded
-against can't be changed underneath them. Agree on the thresholds and
-payout split with the project operator before calling this; there's no
-fixing a typo afterward short of cancelling the whole project.
+**The call is repeatable only until the vault's first deposit.** Until
+then you can correct a schedule freely. After it, `configure_milestones`
+fails with `ScheduleAlreadySet`, so a schedule donors already funded
+against can't be changed underneath them — and there's no fixing a typo
+short of cancelling the whole project. That's the second reason to
+configure before approving, on top of the gap described above: an
+unapproved project can't take the deposit that locks it.
+
+Two things to settle with the operator before calling:
+
+- **The floor has to come from the plot's first measurement.** The
+  year-2000 baseline means a previously-cleared plot starts below 100%
+  retention permanently, so a floor picked without looking at a real
+  reading is either trivially met or unreachable — see
+  [Forest Retention Metric & Limitations](./forest-cover-metric.md#floors-are-relative-to-the-year-2000-baseline).
+- **Sustain periods set the pace of the whole project.** They must
+  increase across the schedule, and the longest one is effectively the
+  project's duration. Months are the intended scale.
 
 ## Rotating an attestor
 

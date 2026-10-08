@@ -87,12 +87,16 @@ off-chain registration intake instead.
 Two pieces here have no equivalent in a purely read-mirroring backend:
 
 - **The GFW polling worker** queries the Global Forest Watch API for each
-  active project's polygon on a schedule and computes forest-cover change
-  since the last check, storing the result as a snapshot.
+  active project's polygon on a schedule and records how much of the
+  plot's baseline forest is still standing, storing each result as a
+  snapshot. Those snapshots are the evidence every milestone verdict rests
+  on, which is why a gap in them breaks a project's streak rather than
+  being quietly skipped over.
 - **The attestation submitter** is the one place in this entire system a
   private key lives server-side. When the milestone evaluator decides a
-  project's next threshold has been crossed, this component signs and
-  submits `attest_milestone` using the backend's configured attestor key.
+  project has held its next milestone's retention floor for long enough,
+  this component signs and submits `attest_milestone` using the backend's
+  configured attestor key.
   This is the semi-trusted-attestor design described in
   [The Milestone Attestation Model](./attestation-model.md) — a
   disclosed, deliberate exception to "the backend never signs," not an

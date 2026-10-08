@@ -5,36 +5,61 @@ sidebar_position: 10.5
 # What happens to a stalled project
 
 A project can be fully approved, funded, and given a milestone schedule,
-and then simply never cross its next threshold — the plot's forest cover
-stops changing enough, the operator goes dark, or the project just doesn't
-work out. Nothing about that state is a contract error: `attest_milestone`
-only ever fires when the evaluator finds the threshold crossed, and a
-threshold that's never crossed just means it's never called again. The
-pieces of what happens next — cancellation, refunds, and who actually
-decides to pull the trigger — are documented separately today. This page is
-the single place that ties them together.
+and then never earn its next tranche. Nothing about that state is a
+contract error: `attest_milestone` only fires when the evaluator finds a
+milestone's conditions met, and conditions that are never met just mean
+it's never called again. The pieces of what happens next — cancellation,
+refunds, and who actually decides to pull the trigger — are documented
+separately today. This page is the single place that ties them together.
+
+## A stall has three different shapes
+
+Because a milestone is a retention floor *and* a sustain period, there's
+more than one way to be stuck, and they call for different responses:
+
+- **The plot is below its floor.** Forest was cleared. Every check below
+  the floor restarts the sustain clock from zero rather than pausing it,
+  so a plot that dips repeatedly can stay short of a milestone
+  indefinitely even if it spends most of its time compliant. This is the
+  case that usually means the project has actually failed.
+- **The plot is holding, but the checks stopped.** A gap in the record
+  longer than `GFW_MAX_OBSERVATION_GAP_SECONDS` breaks a streak even
+  though the forest is fine, because an outage isn't evidence of
+  compliance. A backend that was down, an expired GFW key, or a polygon
+  GFW keeps rejecting (which puts the project on an escalating per-project
+  backoff) all land here. This is an infrastructure problem wearing a
+  stalled project's clothes, and cancelling is the wrong response to it.
+- **Nothing is wrong and it's simply slow.** Sustain periods are months
+  long by design, and they increase across a schedule. A healthy project
+  mid-sustain-period is indistinguishable from a stalled one by status
+  alone.
 
 ## Nothing detects a stall automatically
 
-Worth stating plainly: there is no timeout, no "N checks with no progress"
-rule, and no automatic cancellation anywhere in this system. The backend's
-milestone evaluator does exactly one thing on every check — compare a
-project's cumulative forest-cover change to its next pending milestone's
-`threshold_bps`, and attest if it's crossed
+Worth stating plainly: there is no timeout, no "no progress in N checks"
+rule, and no automatic cancellation anywhere in this system. The
+evaluator does exactly one thing per check — decide whether the next
+pending milestone's floor has held long enough, and attest if it has
 ([`src/milestones/evaluator.ts`](https://github.com/canopychain/canopychain-backend/blob/main/src/milestones/evaluator.ts)).
-It has no concept of "this project hasn't moved in a while" — a stalled
-project just keeps failing that comparison, silently, forever, exactly like
-a healthy project between two milestones does. The only difference between
-"stalled" and "just slow" is time, and nothing in the system is watching
-the clock.
+It has no concept of "this project hasn't moved in a while," and nothing
+in the system is watching the clock on a project's behalf.
 
-That also means there's currently no dedicated signal to notice a stall
-by. Each Global Forest Watch check is recorded as a
-`ForestCoverSnapshot` (see [The backend's data model](./data-model.md)),
-but that table isn't exposed by any public API endpoint — a donor or
-operator watching for staleness today has only `GET /projects/:id`'s
-milestone timeline to go on: the same `PENDING` milestone, unchanged, across
-repeated checks over an unusually long time.
+What you *can* see is which of the three shapes you're in.
+`GET /projects/:id` returns a `nextMilestoneProgress` object (see the
+[API reference](./api-reference.md#get-projectsid)) that distinguishes
+them without needing database access:
+
+| What it shows | Which shape |
+| --- | --- |
+| `currentRetentionBps` below the floor | Below its floor — forest was lost |
+| At or above the floor, but `sustainedSeconds` keeps resetting to 0 | Either a dipping plot or a broken check record |
+| At or above the floor, `sustainedSeconds` climbing steadily | Healthy, just slow |
+
+The one thing it won't tell you apart is a dipping plot from a stalled
+poll worker, since both surface as a streak that won't accumulate. The
+backend's own `/gfw/status` endpoint is what separates those: if the poll
+worker hasn't completed a run recently, the problem is the checks, not
+the forest.
 
 ## The judgement call
 

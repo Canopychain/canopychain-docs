@@ -17,6 +17,17 @@ something enforced by the contract itself. Each project's own page shows
 its plot boundary on a map, its milestone timeline, and how much has been
 deposited and released so far.
 
+The timeline is worth reading before you fund rather than after. Each
+milestone asks for two things: that a share of the plot's baseline forest
+is still standing, and that it has stayed standing for a set period —
+months, typically. For the next pending milestone the timeline also shows
+where the plot actually is against both: how much is standing now, and
+how far into the sustain period it has got. A plot sitting at its floor
+for a week and one that has held it for five months are in very different
+places, and only one of them is close to releasing anything. See
+[Forest Retention Metric & Limitations](./forest-cover-metric.md) for what
+that measurement can and can't tell you.
+
 ## 3. Fund it
 
 From a project's page, **Fund this project** opens the funding form:

@@ -111,7 +111,7 @@ rules the contract enforces rather than by manual transfer.
 
 **GFW (Global Forest Watch)** — the satellite-data API the backend
 queries for each project's forest-cover status. See
-[Forest-Cover Metric & Limitations](./forest-cover-metric.md) for exactly
+[Forest Retention Metric & Limitations](./forest-cover-metric.md) for exactly
 what it does and doesn't measure here.
 
 **Approved project** — a project `project-registry` has marked

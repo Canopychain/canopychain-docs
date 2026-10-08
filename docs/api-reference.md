@@ -81,6 +81,29 @@ endpoint can each independently create this row, and
 [The backend's data model](./data-model.md) for every field's exact
 provenance.
 
+### `GET /gfw/status`
+
+The poll worker's last-run status. Unauthenticated, and about the
+*worker*, not any one project.
+
+```json
+{
+  "running": true,
+  "lastRunStartedAt": "...", "lastRunCompletedAt": "...",
+  "lastRunSucceeded": true, "lastError": null
+}
+```
+
+Worth knowing because a project's milestone progress depends on checks
+actually happening: a streak breaks on a gap in the record, so a worker
+that isn't running looks, from `nextMilestoneProgress` alone, a lot like a
+plot that isn't holding. This endpoint is what tells those apart — see
+[What happens to a stalled project](./stalled-projects.md#nothing-detects-a-stall-automatically).
+`running` only reports whether the worker's interval is active; the four
+`lastRun`/`lastError` fields are `null` until a pass has actually
+completed, so a freshly-started backend reports `running: true` with no
+run history yet.
+
 ### `GET /donations?donor=`
 
 `donor` is required — a Stellar address (`^G[A-Z2-7]{55}$`). `400` if it

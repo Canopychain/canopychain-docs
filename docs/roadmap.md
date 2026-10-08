@@ -21,10 +21,14 @@ real instance:
   [The Milestone Attestation Model](./attestation-model.md) — but it's
   the single biggest thing that would change if the Soroban oracle
   ecosystem matures.
-- **The forest-cover metric can't positively confirm regrowth**, only the
-  absence of further loss against a year-2000 baseline. See
-  [Forest-Cover Metric & Limitations](./forest-cover-metric.md) for what
-  a production-grade version of this would actually need.
+- **Milestones certify retention, not regrowth.** The free satellite data
+  available on a rolling basis records forest loss, so what can be proven
+  is that a share of a plot's year-2000 baseline forest is still standing
+  and has been for a given period — not that new trees have grown. Paying
+  for confirmed regrowth needs canopy-height or biomass data this
+  integration doesn't reach for, plus a per-project baseline captured at
+  approval rather than the shared year-2000 one. See
+  [Forest Retention Metric & Limitations](./forest-cover-metric.md).
 - **No rate limiting on any backend endpoint.** A known, un-mitigated gap
   in the current MVP — see [Security and audit status](./security.md).
 - **The Freighter-driven end-to-end tests are documented stubs, not

@@ -7,16 +7,17 @@ sidebar_position: 1
 
 Canopychain is an open-source reforestation funding platform on
 [Stellar](https://stellar.org) that releases donor funds to a project
-**in tranches, only when satellite data confirms real forest-cover
-change on the specific GPS-bounded plot being funded** — not on a manual
-review cycle, and not as one lump sum up front.
+**in tranches, only once satellite data confirms the forest on the
+specific GPS-bounded plot being funded is still standing** — not on a
+manual review cycle, and not as one lump sum up front.
 
 A donor picks a registered project, deposits into its escrow vault, and
-waits. As the project's plot shows measurable forest-cover change, a
-backend service checks that against the project's milestone schedule and,
-when a threshold is crossed, attests to it on-chain — releasing that
-tranche to the project's recipient. Nothing releases without an
-attestation; nothing attests without the underlying satellite check.
+waits. A backend service checks the plot against Global Forest Watch on a
+schedule and records how much of its forest is still standing. Once a
+plot has held above its milestone's floor for long enough — months, by
+design — the service attests that on-chain, releasing the tranche to the
+project's recipient. Nothing releases without an attestation; nothing
+attests without an unbroken record of satellite checks behind it.
 
 ## The problem
 
@@ -43,11 +44,14 @@ stating up front rather than glossing over:
   real satellite data, and a single trusted key attests it on-chain. This
   is a deliberate, disclosed tradeoff, not a hidden one — see
   [The Milestone Attestation Model](./attestation-model.md).
-- **The MVP metric is "% forest-cover change in a polygon," not
-  certified carbon tons.** Real carbon-credit accounting requires
-  accredited registries (Verra, Gold Standard) that this project doesn't
-  integrate. Claiming otherwise would overstate what's actually being
-  measured — see [Forest-Cover Metric & Limitations](./forest-cover-metric.md).
+- **The MVP metric is forest *retention*, not certified carbon tons —
+  and not confirmed regrowth either.** The free satellite data available
+  on a rolling basis records forest loss, not new growth, so what
+  Canopychain can honestly pay for is a plot staying intact over time.
+  Real carbon-credit accounting additionally requires accredited
+  registries (Verra, Gold Standard) that this project doesn't integrate.
+  Claiming either would overstate what's actually being measured — see
+  [Forest Retention Metric & Limitations](./forest-cover-metric.md).
 
 ## How it works
 
@@ -58,11 +62,12 @@ stating up front rather than glossing over:
 3. **Donors fund the project** — deposits go into `milestone-vault`'s
    pooled escrow for that project, not directly to the operator.
 4. **The backend polls Global Forest Watch** for each active project's
-   polygon on a schedule, computing forest-cover change since the last
-   check.
-5. **When a milestone threshold is crossed**, the backend signs and
-   submits an attestation on-chain, releasing that tranche to the
-   recipient.
+   polygon on a schedule, recording how much of the plot's baseline
+   forest is still standing each time.
+5. **Once the plot has held above the next milestone's floor** for that
+   milestone's full sustain period, with no gaps in the record, the
+   backend signs and submits an attestation on-chain, releasing that
+   tranche to the recipient.
 6. **If a project stalls**, an admin can cancel it; donors can then
    reclaim their proportional share of whatever hasn't been released yet.
 
@@ -86,7 +91,7 @@ matter to one of four audiences. Pick the one that's you:
   funding. Start with the
   [Operator guide](./operator-guide.md), then
   [What happens to a stalled project](./stalled-projects.md) for what
-  happens if your project doesn't cross a milestone in time.
+  happens if your plot stops clearing its retention floor.
 - **Admin** — running an instance: approving registrations, configuring
   milestone schedules, and cancelling stalled projects. Start with the
   [Admin runbook](./admin-runbook.md), which walks through those in the
