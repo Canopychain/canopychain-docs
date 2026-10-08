@@ -42,7 +42,8 @@ erDiagram
     }
     Milestone {
         int index
-        int thresholdBps
+        int retentionFloorBps
+        int sustainSeconds
         int payoutBps
         string status
         string payoutAmount
@@ -52,6 +53,7 @@ erDiagram
     }
     ForestCoverSnapshot {
         float forestCoverPct
+        int retentionBps
         int changeBps
     }
 ```
@@ -101,7 +103,7 @@ One row per tranche in a project's schedule, `(projectId, index)` unique.
 
 | Column | Source |
 | --- | --- |
-| `index`, `thresholdBps`, `payoutBps` | Written when the schedule is first configured — mirrors `configure_milestones`'s arguments. |
+| `index`, `retentionFloorBps`, `sustainSeconds`, `payoutBps` | Indexer, from `schedule`. The event carries the whole `Vec<Milestone>`, so the handler replaces a project's rows wholesale in one transaction rather than patching them — the schedule is correctable on-chain until the first deposit, and this mirrors whichever version ended up sticking. It refuses to touch a project that already has an attested milestone. |
 | `status`, `attestedAt`, `payoutAmount` | Indexer, from `attested`. The event's `milestones_completed` count tells the handler which index just advanced (`milestones_completed - 1`), so it can flip that one row from `PENDING` to `ATTESTED` without re-deriving state from scratch. |
 
 ## `project_donations`
@@ -117,15 +119,32 @@ that history, the on-chain event log is the only source of it.
 ## `forest_cover_snapshots`
 
 One row per Global Forest Watch check the polling worker ran against a
-project's polygon: the computed `forestCoverPct`, the signed `changeBps`
-against the previous check, and the raw API response for debugging. This
-table has no equivalent on-chain event at all — it's the backend's own
-working data for the milestone evaluator (see
-[Forest-Cover Metric & Limitations](./forest-cover-metric.md)), not a
-mirror of anything the contracts emit. It's also not currently exposed by
-any public API endpoint (see the [API reference](./api-reference.md)) —
-reading it means direct database access, not a request a donor-facing
-client can make.
+project's polygon, and the evidence every milestone verdict rests on.
+This table has no equivalent on-chain event at all — it's the backend's
+own working data for the milestone evaluator (see
+[Forest Retention Metric & Limitations](./forest-cover-metric.md)), not a
+mirror of anything the contracts emit.
+
+Two of its columns are easy to mix up, because they measure against
+different denominators:
+
+| Column | Measured against | Used for |
+| --- | --- | --- |
+| `retentionBps` | The plot's *baseline* forest area | Deciding milestones — this is what a `retentionFloorBps` is compared to |
+| `forestCoverPct` | The *whole* polygon's area | Display only |
+
+`changeBps` is the signed difference in `forestCoverPct` from the previous
+check, kept for history. Nothing decides a milestone from it: cumulative
+loss never decreases, so it can't be used to certify progress — the
+reasoning is in
+[Why retention, and not growth](./forest-cover-metric.md#why-retention-and-not-growth).
+`rawResponse` holds the raw API payload for debugging.
+
+Individual rows aren't exposed by any public endpoint, so reading them
+means direct database access. What *is* exposed is the evaluator's
+conclusion about them: `GET /projects/:id` returns a
+`nextMilestoneProgress` object derived from this table (see the
+[API reference](./api-reference.md#get-projectsid)).
 
 ## `donors`
 

@@ -52,10 +52,27 @@ recipient, an attestor, and an approval status.
 **Vault** — a project's pooled donor escrow on `milestone-vault`. Holds
 every donor's deposit for that project until milestones release it.
 
-**Milestone** — one tranche in a project's release schedule: a
-forest-cover-change threshold (`threshold_bps`) and the percentage of the
-pool it releases when attested (`payout_bps`). Set once, via
-`configure_milestones`, and immutable after.
+**Milestone** — one tranche in a project's release schedule: a retention
+floor (`retention_floor_bps`), how long it must hold (`sustain_seconds`),
+and the percentage of the pool released when it does (`payout_bps`). Set
+via `configure_milestones`, correctable until the vault's first deposit,
+locked after.
+
+**Retention floor** (`retention_floor_bps`) — the share of a plot's
+*baseline* forest that must still be standing for a milestone to count.
+Measured against the plot's year-2000 baseline forest area, not the whole
+polygon — see
+[Forest Retention Metric & Limitations](./forest-cover-metric.md).
+
+**Sustain period** (`sustain_seconds`) — how long retention has to hold
+continuously at or above the floor before a milestone is earned. Must
+strictly increase across a schedule, so each tranche demands a longer
+proven record than the last.
+
+**Streak** — the unbroken run of satellite checks at or above a
+milestone's floor, ending at the most recent check. Broken by a reading
+below the floor *or* by a gap in the record longer than the configured
+tolerance, so an outage never counts as compliance.
 
 **Tranche** — the portion of a project's pool released by a single
 milestone attestation — a percentage of `total_deposited`, computed fresh
@@ -63,7 +80,7 @@ against the pool's current size, not a snapshot from when the schedule
 was configured.
 
 **Attestation / attest** — the on-chain act of confirming a milestone's
-threshold has been crossed, performed by calling `attest_milestone`. See
+conditions have both been met, performed by calling `attest_milestone`. See
 [The Milestone Attestation Model](./attestation-model.md) for who can do
 this and what it actually verifies.
 
@@ -73,7 +90,7 @@ configured signing key — see
 [The Milestone Attestation Model](./attestation-model.md).
 
 **Basis points (bps)** — hundredths of a percent; 100 bps = 1%, 10,000
-bps = 100%. How every threshold and payout percentage in a milestone
+bps = 100%. How every retention and payout percentage in a milestone
 schedule is expressed, to avoid floating-point rounding in on-chain math.
 
 **Operator** — the person or organization that registers and manages a

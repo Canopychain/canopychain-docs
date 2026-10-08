@@ -44,12 +44,33 @@ or an operator address. `404` if it doesn't exist.
   "polygonHash": "...",
   "totalDeposited": "1000000000", "totalReleased": "300000000",
   "milestones": [
-    { "id": "...", "index": 0, "thresholdBps": 500, "payoutBps": 3000, "status": "ATTESTED", "attestedAt": "...", "payoutAmount": "300000000" },
-    { "id": "...", "index": 1, "thresholdBps": 1000, "payoutBps": 3000, "status": "PENDING", "attestedAt": null, "payoutAmount": null }
+    { "id": "...", "index": 0, "retentionFloorBps": 9900, "sustainSeconds": 7776000, "payoutBps": 3000, "status": "ATTESTED", "attestedAt": "...", "payoutAmount": "300000000" },
+    { "id": "...", "index": 1, "retentionFloorBps": 9900, "sustainSeconds": 15552000, "payoutBps": 3000, "status": "PENDING", "attestedAt": null, "payoutAmount": null }
   ],
+  "nextMilestoneProgress": {
+    "index": 1, "retentionFloorBps": 9900, "requiredSeconds": 15552000,
+    "currentRetentionBps": 9950, "sustainedSeconds": 4320000, "ready": false
+  },
   "stats": { "donorCount": 2, "milestonesAttested": 1, "milestonesTotal": 3 }
 }
 ```
+
+`nextMilestoneProgress` is where the project stands against its next
+pending milestone, and is `null` when a project has no schedule or every
+milestone is already attested. It's computed with the same evaluator the
+attestation worker runs, so a donor reading this endpoint and the thing
+that actually releases funds can't disagree about whether a milestone has
+been earned.
+
+Two fields are easy to confuse. `currentRetentionBps` is the share of
+baseline forest standing at the **latest** check, and is `null` before a
+project's first check has landed — distinct from `0`, which would mean a
+cleared plot. `sustainedSeconds` is the length of the unbroken run of
+checks at or above the floor, counted from the oldest check in that run;
+it resets to `0` as soon as a check comes in below the floor. `ready`
+means both conditions are met and an attestation is pending. See
+[Forest Retention Metric & Limitations](./forest-cover-metric.md#how-a-streak-is-judged)
+for how a run gets broken.
 
 `recipientAddress`, `attestorAddress`, `polygonGeoJson`, and
 `polygonHash` are all `null` until the operator's registration intake

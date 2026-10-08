@@ -78,7 +78,7 @@ covers why that's a deliberate choice and what it means operationally.
 | Type | Fields |
 | --- | --- |
 | `ProjectVault` | `recipient: Address`, `attestor: Address`, `token: Address`, `total_deposited: i128`, `total_released: i128`, `milestones_completed: u32`, `cancelled: bool` |
-| `Milestone` | `threshold_bps: u32`, `payout_bps: u32` |
+| `Milestone` | `retention_floor_bps: u32`, `sustain_seconds: u64`, `payout_bps: u32` |
 
 | `DataKey` variant | Points to |
 | --- | --- |
@@ -88,14 +88,30 @@ covers why that's a deliberate choice and what it means operationally.
 | `Schedule(u64)` | A project's `Vec<Milestone>` release schedule (persistent) |
 | `Paused` | `bool` — whether fund-moving actions are halted (instance) |
 
-`Milestone.threshold_bps` is the cumulative forest-cover-change (in basis
-points of plot area) the backend's satellite check must confirm before
-the attestor will attest that milestone. It's recorded on-chain purely
-for donor-facing transparency — **the contract has no way to verify
-satellite data and does not check this value itself.** `payout_bps` is
-the share of `total_deposited` released when that milestone is attested;
-a schedule's `payout_bps` values must sum to at most 10,000 (100%), and
-`threshold_bps` must strictly increase from one milestone to the next.
+A `Milestone` states two conditions and a price. `retention_floor_bps` is
+the share of the plot's *baseline* forest that must still be standing,
+and `sustain_seconds` is how long it must continuously hold at or above
+that floor, before the attestor will attest the milestone.
+`payout_bps` is the share of `total_deposited` released when it does.
+
+Both conditions are recorded on-chain purely for donor-facing
+transparency — **the contract has no way to verify satellite data and
+does not check either value itself.** What it does enforce is that a
+schedule can't be written to pay for nothing:
+
+- `payout_bps` values must sum to at most 10,000 (100%).
+- `retention_floor_bps` must be between 1 and 10,000. A zero floor is
+  satisfied by a cleared plot.
+- `sustain_seconds` must be non-zero, and must strictly increase from one
+  milestone to the next. A zero sustain period is satisfied instantly, and
+  each tranche should demand a longer record than the one before it.
+
+Note that the floor is *not* required to increase — a schedule at a
+constant 99% floor over 90, 180 and 365 days is the normal shape. What
+escalates across a schedule is the length of the proven record, not the
+strictness of the threshold. See
+[Forest Retention Metric & Limitations](./forest-cover-metric.md) for how
+the floor relates to a plot's year-2000 baseline.
 
 ### Errors
 
@@ -107,8 +123,8 @@ a schedule's `payout_bps` values must sum to at most 10,000 (100%), and
 | 4 | `InvalidAmount` | A deposit amount was ≤ 0 |
 | 5 | `TokenMismatch` | A deposit's token didn't match the vault's existing token |
 | 6 | `VaultCancelled` | Called a fund-moving action on a cancelled vault |
-| 7 | `ScheduleAlreadySet` | `configure_milestones` called twice for the same project |
-| 8 | `InvalidSchedule` | Empty schedule, non-increasing thresholds, or payouts summing over 100% |
+| 7 | `ScheduleAlreadySet` | `configure_milestones` called again for a project that already has a schedule *and* has taken a deposit |
+| 8 | `InvalidSchedule` | Empty schedule, a floor of 0 or above 100%, a sustain period of 0, non-increasing sustain periods, or payouts summing over 100% |
 | 9 | `ScheduleNotFound` | `attest_milestone` called before a schedule was configured |
 | 10 | `AllMilestonesComplete` | `attest_milestone` called with nothing left to attest |
 | 11 | `ContractPaused` | Called a paused action while the vault is paused |
@@ -174,10 +190,13 @@ topics `(Symbol("deposit"), project_id, donor)`, data
 ```rust
 fn configure_milestones(env: Env, project_id: u64, milestones: Vec<Milestone>) -> Result<(), Error>
 ```
-**Requires the admin's auth.** Sets a project's tranche schedule once —
-the schedule donors funded against can't be quietly changed underneath
-them afterward. Emits a `schedule` event — topics
-`(Symbol("schedule"), project_id)`, data `milestones.len()`.
+**Requires the admin's auth.** Sets a project's tranche schedule. It can
+be corrected freely until the vault takes its first deposit, and is
+locked from then on — the schedule donors funded against can't be quietly
+changed underneath them afterward. Emits a `schedule` event — topics
+`(Symbol("schedule"), project_id)`, data the full `Vec<Milestone>`, so an
+indexer can reconstruct the resulting schedule from the event alone
+rather than having to call `get_schedule` separately.
 
 ```rust
 fn attest_milestone(env: Env, project_id: u64) -> Result<i128, Error>
