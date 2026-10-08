@@ -4,16 +4,16 @@ sidebar_position: 4
 
 # The Milestone Attestation Model
 
-Canopychain releases funds when "satellite data confirms real forest-cover
-growth." It's worth being precise about what actually confirms that,
-because the honest answer is a person's key, informed by a machine
+Canopychain releases funds when "satellite data confirms a plot's forest
+is still standing." It's worth being precise about what actually confirms
+that, because the honest answer is a person's key, informed by a machine
 process — not a trustless, on-chain fact the way a token transfer is.
 
 ## Why not fully trustless?
 
-A fully trustless design would need the forest-cover check itself to
-happen verifiably on-chain, or through a decentralized oracle network that
-can prove it queried Global Forest Watch honestly and reported the result
+A fully trustless design would need the forest check itself to happen
+verifiably on-chain, or through a decentralized oracle network that can
+prove it queried Global Forest Watch honestly and reported the result
 unmodified. **Soroban has no mature decentralized oracle network** — no
 Chainlink equivalent — as of this writing. Building one from scratch was
 out of scope for this project; pretending the gap doesn't exist would have
@@ -26,13 +26,17 @@ computes the milestone condition from real data, and a single trusted key
 signs the result on-chain. Concretely:
 
 1. `canopychain-backend`'s GFW polling worker queries Global Forest Watch
-   for a project's polygon on a schedule and computes forest-cover change
-   since the last check (see
-   [Forest-Cover Metric & Limitations](./forest-cover-metric.md) for what
-   that number does and doesn't mean).
-2. The milestone evaluator compares the project's cumulative change
-   against its next pending milestone's `threshold_bps`.
-3. If it's crossed, the attestation submitter signs and submits
+   for a project's polygon on a schedule and records how much of its
+   baseline forest is still standing, in basis points (see
+   [Forest Retention Metric & Limitations](./forest-cover-metric.md) for
+   what that number does and doesn't mean).
+2. The milestone evaluator checks the next pending milestone's two
+   conditions against that history: has retention held at or above
+   `retention_floor_bps`, continuously, for at least `sustain_seconds`?
+   A reading below the floor breaks the run, and so does a gap in the
+   record longer than the configured maximum — an outage doesn't count as
+   compliance.
+3. If both hold, the attestation submitter signs and submits
    `attest_milestone` using the backend's configured attestor key — see
    [Architecture](./architecture.md#the-backend) for where this sits
    relative to the rest of the backend, which otherwise never signs
@@ -45,6 +49,17 @@ milestone attestation on Canopychain means trusting that key's holder,**
 full stop. That's a real, disclosed limitation, not a detail to gloss
 over.
 
+## Time is the attestor's main constraint
+
+A retention milestone can't be satisfied in a hurry. `sustain_seconds` is
+validated on-chain as non-zero and strictly increasing across a schedule,
+so every tranche after the first requires a longer unbroken record than
+the one before it. An honest attestor therefore can't release a schedule
+early even if a project looks perfect on day one, and the structure makes
+a dishonest early release conspicuous: the vault's attestation events are
+timestamped, and the backend's recorded checks are what the claim rests
+on.
+
 ## What limits the blast radius
 
 A compromised or dishonest attestor can't do arbitrary damage — the
@@ -54,10 +69,15 @@ contract narrows what an attestation can actually do:
   project. `set_attestor` lets an admin rotate a project's attestor key at
   any time, without needing anything from the recipient or donors — the
   intended response to a suspected compromise.
-- **Payout is capped by the project's own schedule**, configured once by
-  an admin and immutable after (`configure_milestones` — see the
-  [contracts reference](./contracts.md#milestone-vault)). An attestor
-  can't invent a new tranche or exceed the schedule's total.
+- **Payout is capped by the project's own schedule**, set by an admin and
+  locked once the vault has taken its first deposit (`configure_milestones`
+  — see the [contracts reference](./contracts.md#milestone-vault)). An
+  attestor can't invent a new tranche or exceed the schedule's total, and
+  nobody can move the goalposts under donors who have already funded.
+- **A schedule can't be configured to pay for nothing.** The contract
+  rejects a zero retention floor (which bare ground satisfies) and a zero
+  sustain period (which anything satisfies instantly), so there's no
+  legitimate-looking schedule that releases funds on no evidence.
 - **Attestation only ever advances the next pending milestone** — a
   compromised key can trigger a release early, but can't replay old
   milestones or release more than one schedule's worth of funds.
