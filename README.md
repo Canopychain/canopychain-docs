@@ -3,6 +3,13 @@
 Documentation site for Canopychain, a milestone-verified reforestation
 funding platform on Stellar. Built with [Docusaurus](https://docusaurus.io/).
 
+**Live:** <https://canopychain.github.io/canopychain-docs/>
+
+The live app is at [canopychain-frontend.vercel.app](https://canopychain-frontend.vercel.app),
+backed by [canopychain-backend](https://github.com/Canopychain/canopychain-backend)
+and the contracts in
+[canopychain-contracts](https://github.com/Canopychain/canopychain-contracts).
+
 ## Local development
 
 ```
@@ -17,9 +24,9 @@ npm run build
 ```
 
 Deploys automatically to GitHub Pages on every push to `main` (see
-`.github/workflows/deploy.yml`) — but only once, one time, someone enables
-it in the repo: **Settings → Pages → Source → GitHub Actions**. The
-workflow won't publish anything until that's set.
+`.github/workflows/deploy.yml`). Already enabled for this repo
+(**Settings → Pages → Source → GitHub Actions**); a fresh fork needs that
+set once before the workflow has anywhere to publish to.
 
 ## Versioning
 
