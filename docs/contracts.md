@@ -68,10 +68,10 @@ no data.
 
 ## milestone-vault
 
-Holds every project's pooled donor escrow. Notably, **this contract
-doesn't check project-registry at all** — `deposit` opens a vault for any
-project id, approved or not. [Deploying the contracts](./deploying-contracts.md#operational-note-the-registry-and-the-vault-dont-check-each-other)
-covers why that's a deliberate choice and what it means operationally.
+Holds every project's pooled donor escrow. A project's vault opens on its
+first deposit, and only if `project-registry` has approved the project;
+the vault takes the project's recipient and attestor from the registry.
+[Deploying the contracts](./deploying-contracts.md#operational-note-the-vault-reads-the-registry-when-a-projects-vault-opens) covers what that means operationally.
 
 ### Storage
 
@@ -130,6 +130,9 @@ the floor relates to a plot's year-2000 baseline.
 | 11 | `ContractPaused` | Called a paused action while the vault is paused |
 | 12 | `NotCancelled` | `refund` called on a project that hasn't been cancelled |
 | 13 | `NothingToRefund` | Caller has no recorded donation left to refund |
+| 14 | `DepositBelowMinimum` | A deposit amount was below the admin-set minimum (`min_deposit`) |
+| 15 | `ProjectNotRegistered` | A first deposit named a project id `project-registry` has no project for |
+| 16 | `ProjectNotApproved` | A first deposit named a project `project-registry` hasn't approved yet |
 
 ### Tranche math
 
@@ -154,12 +157,14 @@ exactly what's left in the pool.
 ### Functions
 
 ```rust
-fn init(env: Env, admin: Address) -> Result<(), Error>
+fn init(env: Env, admin: Address, registry: Address) -> Result<(), Error>
 ```
-Sets the admin. Once only.
+Sets the admin and the `project-registry` contract that projects'
+recipients and attestors are read from. Once only.
 
 ```rust
 fn admin(env: Env) -> Result<Address, Error>
+fn registry(env: Env) -> Result<Address, Error>
 fn get_vault(env: Env, project_id: u64) -> Result<ProjectVault, Error>
 fn get_donation(env: Env, project_id: u64, donor: Address) -> i128
 fn get_schedule(env: Env, project_id: u64) -> Result<Vec<Milestone>, Error>
@@ -177,13 +182,14 @@ activity, it never traps donor funds already in the vault. Emit `pause` /
 `unpause` events (no data).
 
 ```rust
-fn deposit(env: Env, donor: Address, project_id: u64, recipient: Address, attestor: Address, token: Address, amount: i128) -> Result<i128, Error>
+fn deposit(env: Env, donor: Address, project_id: u64, token: Address, amount: i128) -> Result<i128, Error>
 ```
 **Requires `donor`'s auth.** The first deposit for a `project_id` opens
-its vault, recording `recipient` and `attestor`; later deposits ignore
-those two arguments and top up the existing vault instead, so they can't
-redirect an already-funded project's payout or attestation rights.
-Returns the vault's new `total_deposited`. Emits a `deposit` event —
+its vault. The project must be registered and approved in
+`project-registry` (otherwise `ProjectNotRegistered` or
+`ProjectNotApproved`), and the vault copies the project's `recipient` and
+`attestor` from that registry entry, so no depositor can choose who gets
+paid or who attests. Later deposits top up the existing vault. Returns the vault's new `total_deposited`. Emits a `deposit` event —
 topics `(Symbol("deposit"), project_id, donor)`, data
 `(amount, total_deposited)`.
 

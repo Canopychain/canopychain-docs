@@ -66,23 +66,16 @@ test identity. Review the [contracts reference](./contracts.md) for what
 `init`, `pause`, `set_attestor`, and `cancel_project` actually do before
 running any of them against real funds.
 
-## Operational note: the registry and the vault don't check each other
+## Operational note: the vault reads the registry when a project's vault opens
 
-Worth internalizing before deploying either contract for real:
-`milestone-vault`'s `deposit` doesn't check `project-registry` at all —
-it will happily open a vault for any project id, approved or not. This is
-a deliberate contract-level choice (it keeps the vault simpler and avoids
-a cross-contract call on every deposit), but it pushes the responsibility
-onto whoever operates the frontend and backend:
+`milestone-vault` is initialized with `project-registry`'s contract ID
+(`scripts/deploy-testnet.sh` deploys the registry first and passes its ID
+to the vault's `init`). A project's first deposit opens its vault only if
+the registry has that project and has approved it, and the vault copies
+the project's recipient and attestor from the registry at that moment.
+Later deposits don't consult the registry again.
 
-- The frontend's project explorer only ever lists projects the backend
-  has marked `approved` — it doesn't and shouldn't offer a way to fund an
-  unreviewed project id directly.
-- If a deposit ever happens directly (bypassing the frontend) against a
-  project id that was never registered or approved, the indexer still
-  records it — with a placeholder project entry — rather than dropping
-  the data. That's intentional: the backend never discards real on-chain
-  activity just because it doesn't fit the expected shape.
-
-In short: approval is a curation layer the *apps* enforce, not something
-the vault contract itself guarantees.
+So approval is enforced on-chain, not only by the apps: a deposit made
+directly against the contract, bypassing the frontend, still can't fund an
+unregistered or unapproved project, or choose its recipient or attestor.
+Rotating a vault's attestor afterwards is the admin's `set_attestor`.
