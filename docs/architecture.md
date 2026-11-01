@@ -14,6 +14,8 @@ and in [the attestation model doc](./attestation-model.md).
 
 ```mermaid
 flowchart LR
+    accTitle: Canopychain components and signing boundaries
+    accDescr: Donors, operators and admins sign contract calls in their own wallets. The backend mirrors contract events and polls Global Forest Watch. Only the attestation submitter signs with a server-side attestor key.
     Donor((Donor))
     Operator((Operator))
     Admin((Admin))
@@ -52,6 +54,65 @@ flowchart LR
     Indexer --> DB
     API --> DB
 ```
+
+## A project's lifecycle
+
+This sequence follows the [admin runbook](./admin-runbook.md): configure
+the milestone schedule **before** approving the project. It shows one
+deposit and one milestone; later deposits and milestones repeat the
+relevant steps. The backend lifeline groups the API, indexer, poller,
+evaluator and submitter so the signing boundary stays visible.
+
+```mermaid
+sequenceDiagram
+    accTitle: Project registration, funding, attestation and refund
+    accDescr: The operator registers on-chain and submits project details to the API. An admin reviews the signed request, configures milestones, then approves. A donor funds the vault. The backend mirrors events and records satellite snapshots. A satisfied milestone is attested with the backend attestor key and paid to the recipient. Alternatively, an admin cancels and each donor claims a refund with their own wallet.
+    actor Operator
+    actor Admin
+    actor Donor
+    participant Registry as project-registry
+    participant Vault as milestone-vault
+    participant Backend
+    participant GFW as Global Forest Watch
+    participant Recipient
+
+    Operator->>Registry: register [operator wallet]
+    Operator->>Backend: POST /projects/register [unsigned API call]
+    Admin->>Backend: GET /projects/pending [admin wallet, SEP-53 header]
+    Admin->>Vault: configure_milestones [admin wallet]
+    Admin->>Registry: approve_project [admin wallet]
+    Donor->>Vault: deposit [donor wallet]
+    Note over Donor,Vault: First deposit opens the vault and records recipient and attestor.
+    Backend->>Registry: Indexer reads events [unsigned RPC call]
+    Backend->>Vault: Indexer reads events [unsigned RPC call]
+    Backend->>Backend: Indexer mirrors on-chain state [unsigned internal step]
+    loop Scheduled satellite checks
+        Backend->>GFW: Poller queries the plot [unsigned API call]
+        Backend->>Backend: Poller records a snapshot [unsigned internal step]
+        Backend->>Backend: Evaluator checks retention floor, sustain period and gaps [unsigned internal step]
+    end
+    alt Next milestone is satisfied
+        Backend->>Vault: Submitter calls attest_milestone [backend attestor key]
+        Vault->>Recipient: Transfer tranche [contract execution, no new signature]
+    else Admin cancels a stalled project
+        Admin->>Vault: cancel_project [admin wallet]
+        Donor->>Vault: refund [donor wallet]
+        Vault->>Donor: Transfer share of unreleased pool [contract execution, no new signature]
+    end
+```
+
+The pending-project request uses an admin wallet's **message signature**
+in a [SEP-53 header](./api-reference.md#authentication), not an on-chain
+transaction. The registration intake is an unsigned API call; it does
+not replace the operator's on-chain registration. Event indexing is
+asynchronous, and can process registration before or after that intake.
+
+Satellite checks inform the backend evaluator. The vault verifies the
+attestor's authorization, not satellite data; see the
+[attestation model](./attestation-model.md). A missed milestone does not
+automatically cancel a project or refund donors. An admin must cancel
+first, and each donor then claims their share of the remaining pool as
+described in [stalled projects](./stalled-projects.md).
 
 ## The contracts (source of truth)
 

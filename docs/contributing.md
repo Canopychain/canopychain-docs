@@ -48,6 +48,18 @@ something this page controls.
 4. Open the PR against `main`, describing what changed and why. Link the
    issue it closes if there is one.
 
+## Accessible diagrams
+
+Write diagrams in fenced `mermaid` blocks. Include `accTitle` and
+`accDescr` in every diagram so the rendered SVG has a title and a
+description for assistive technology. Describe the flow and its important
+boundaries, rather than repeating a list of component names.
+
+Preview diagrams in both light and dark mode, and run `npm run build`
+before opening a pull request. For a sequence involving contracts or
+API calls, label who signs each message and distinguish wallet
+transactions, signed request headers, unsigned calls and internal steps.
+
 ## What reviewers look for
 
 - Does it do what the issue asked, without quietly expanding scope?
