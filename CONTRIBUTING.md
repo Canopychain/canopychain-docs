@@ -40,7 +40,9 @@ succeeds.
 - Link between pages with relative paths ending in `.md`, so Docusaurus can
   resolve and check them.
 - Diagrams are Mermaid, rendered by `@docusaurus/theme-mermaid`. A fenced
-  code block tagged `mermaid` renders directly in any page.
+  code block tagged `mermaid` renders directly in any page. Include
+  `accTitle` and `accDescr` in each diagram, and preview it in light and
+  dark mode; see [Accessible diagrams](./docs/contributing.md#accessible-diagrams).
 - Prefer describing behaviour that's actually implemented. Where something
   is planned rather than built, say so explicitly, and put it on the
   roadmap page.
